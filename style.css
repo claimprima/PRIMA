@@ -1,0 +1,27 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #fdfbf6;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+button {
+  padding: 12px 20px;
+  margin: 10px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+}
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+#status {
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #333;
+  min-height: 1.5em;
+}
