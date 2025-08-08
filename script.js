@@ -1,65 +1,27 @@
-// PRIMA claim dapp — FIXED to call claim(uint256 amount)
-const contractAddress = "0x950e8E9a2c78FeafB5bbCbfdFf3199b0ABe5000c";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-const abi = [
-  {
-    "inputs": [{ "internalType": "uint256", "name": "amount", "type": "uint256" }],
-    "name": "claim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
+contract PRIMAClaimV2 is Ownable {
+    IERC20 public immutable prima;
+    uint256 public immutable amount; // 50e18
 
-let web3, contract, account;
-
-const connectWalletButton = document.getElementById("connectWalletButton");
-const claimButton = document.getElementById("claimButton");
-const status = document.getElementById("status");
-const setStatus = (m) => (status.textContent = m || "");
-
-async function connectWallet() {
-  if (!window.ethereum) return setStatus("MetaMask/Base Wallet not detected.");
-  try {
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    account = accounts[0];
-    web3 = new Web3(window.ethereum);
-    contract = new web3.eth.Contract(abi, contractAddress);
-    setStatus(`Wallet connected: ${account}`);
-    claimButton.disabled = false;
-  } catch {
-    setStatus("Connection rejected.");
-  }
-}
-
-async function claim() {
-  if (!account) return setStatus("Please connect your wallet first.");
-
-  claimButton.disabled = true;
-  setStatus("Sending claim transaction...");
-
-  try {
-    const amount = Web3.utils.toWei("50", "ether"); // 50 PRIMA (18 decimals)
-
-    // Estimate gas; fallback for Base mobile if estimation fails
-    let gas;
-    try {
-      gas = await contract.methods.claim(amount).estimateGas({ from: account });
-      gas = Math.floor(gas * 1.2);
-    } catch {
-      gas = 200000;
+    constructor(address token, uint256 fixedAmount) Ownable(msg.sender) {
+        require(token != address(0), "token=0");
+        require(fixedAmount > 0, "amt=0");
+        prima = IERC20(token);
+        amount = fixedAmount;
     }
 
-    const receipt = await contract.methods.claim(amount).send({ from: account, gas });
-    setStatus(`Claim successful! Tx Hash: ${receipt.transactionHash}`);
-  } catch (err) {
-    setStatus(`Claim failed: ${err?.message || err}`);
-  } finally {
-    claimButton.disabled = false;
-  }
-}
+    function claim() external {
+        // balance check is redundant; failed transfer will revert anyway
+        bool ok = prima.transfer(msg.sender, amount);
+        require(ok, "transfer failed");
+        // no event -> saves ~2k gas; add if you want on-chain logs
+    }
 
-window.addEventListener("load", () => {
-  connectWalletButton.addEventListener("click", connectWallet);
-  claimButton.addEventListener("click", claim);
-});
+    function recover(address token, uint256 amt) external onlyOwner {
+        require(IERC20(token).transfer(owner(), amt), "recover failed");
+    }
+}
