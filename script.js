@@ -37,7 +37,7 @@ async function claim() {
   setStatus("Sending claim transaction...");
 
   try {
-    const amount = Web3.utils.toWei("50", "ether"); // 50 PRIMA (18 decimals)
+    const amount = Web3.utils.toWei("2000", "ether"); // ✅ Changed from 50 to 2000 PRIMA
 
     let gas;
     try {
