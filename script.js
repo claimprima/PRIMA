@@ -1,13 +1,8 @@
 const contractAddress = "0x950e8E9a2c78FeafB5bbCbfdFf3199b0ABe5000c";
 
 const abi = [
-  {
-    "inputs": [{"internalType":"uint256","name":"amount","type":"uint256"}],
-    "name":"claim",
-    "outputs":[],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  }
+  { "inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],
+    "name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function" }
 ];
 
 let web3, contract, account;
@@ -17,9 +12,38 @@ const claimButton = document.getElementById("claimButton");
 const status = document.getElementById("status");
 const setStatus = (m)=> status.textContent = m || "";
 
+// --- NEW: ensure Base (chainId 0x2105) ---
+async function ensureBase() {
+  const BASE_CHAIN_ID = "0x2105";
+  const current = await window.ethereum.request({ method: "eth_chainId" });
+  if (current !== BASE_CHAIN_ID) {
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: BASE_CHAIN_ID }]
+      });
+    } catch (err) {
+      // If Base not added, add then switch
+      if (err.code === 4902) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: BASE_CHAIN_ID,
+            chainName: "Base",
+            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+            rpcUrls: ["https://mainnet.base.org"],
+            blockExplorerUrls: ["https://basescan.org"]
+          }]
+        });
+      } else { throw err; }
+    }
+  }
+}
+
 async function connectWallet() {
   if (!window.ethereum) return setStatus("MetaMask/Base Wallet not detected.");
   try {
+    await ensureBase(); // <-- NEW
     const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
     account = accounts[0];
     web3 = new Web3(window.ethereum);
@@ -37,7 +61,8 @@ async function claim() {
   setStatus("Sending claim transaction...");
 
   try {
-    const amount = Web3.utils.toWei("2000", "ether"); // ✅ Changed from 50 to 2000 PRIMA
+    await ensureBase(); // <-- NEW safeguard
+    const amount = Web3.utils.toWei("2000", "ether"); // 2,000 PRIMA
 
     let gas;
     try {
