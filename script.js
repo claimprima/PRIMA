@@ -1,74 +1,51 @@
-const contractAddress = "0x950e8E9a2c78FeafB5bbCbfdFf3199b0ABe5000c";
+// === CONFIG ===
+const CONTRACT_ADDRESS = "0x950e8E9a2c78FeafB5bbCbfdFf3199b0ABe5000c";
+const CLAIM_AMOUNT_PRIMA = "2000"; // amount in PRIMA tokens, not wei
+const DECIMALS = 18;
 
-// ABI updated for claim(uint256)
-const abi = [
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
-    ],
-    "name": "claim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
-
+// === INIT WEB3 ===
 let web3;
 let contract;
-let account;
+let accounts;
 
-const connectWalletButton = document.getElementById("connectWalletButton");
-const claimButton = document.getElementById("claimButton");
-const status = document.getElementById("status");
+window.addEventListener("load", async () => {
+    if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+        document.getElementById("connectWalletButton").addEventListener("click", connectWallet);
+        document.getElementById("claimButton").addEventListener("click", claimTokens);
+    } else {
+        alert("MetaMask / Web3 wallet not detected. Please install MetaMask.");
+    }
+});
 
-function setStatus(message) {
-  status.textContent = message;
+async function connectWallet() {
+    try {
+        accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        document.getElementById("status").innerText = `Connected: ${accounts[0]}`;
+        document.getElementById("claimButton").disabled = false;
+    } catch (err) {
+        console.error(err);
+        document.getElementById("status").innerText = "Wallet connection failed.";
+    }
 }
 
-// Connect Wallet
-connectWalletButton.addEventListener("click", async () => {
-  if (!window.ethereum) {
-    setStatus("MetaMask or Base Wallet not detected.");
-    return;
-  }
-  try {
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    account = accounts[0];
-    web3 = new Web3(window.ethereum);
-    contract = new web3.eth.Contract(abi, contractAddress);
-    setStatus(`Wallet connected: ${account}`);
-    claimButton.disabled = false;
-  } catch (err) {
-    setStatus("Connection rejected.");
-  }
-});
-
-// Claim 50 PRIMA
-claimButton.addEventListener("click", async () => {
-  if (!account) {
-    setStatus("Please connect your wallet first.");
-    return;
-  }
-  claimButton.disabled = true;
-  setStatus("Sending claim transaction...");
-
-  try {
-    const amount = web3.utils.toWei("50", "ether"); // 50 PRIMA with 18 decimals
-
-    const tx = contract.methods.claim(amount);
-    let gas;
-    try {
-      gas = await tx.estimateGas({ from: account });
-      gas = Math.floor(gas * 1.2);
-    } catch {
-      gas = 200000; // fallback for Base mobile
+async function claimTokens() {
+    if (!accounts || accounts.length === 0) {
+        alert("Please connect your wallet first.");
+        return;
     }
 
-    const receipt = await tx.send({ from: account, gas });
-    setStatus(`Claim successful! Tx Hash: ${receipt.transactionHash}`);
-  } catch (err) {
-    setStatus(`Claim failed: ${err.message || err}`);
-  } finally {
-    claimButton.disabled = false;
-  }
-});
+    const amountWei = web3.utils.toBN(CLAIM_AMOUNT_PRIMA).mul(web3.utils.toBN(10).pow(web3.utils.toBN(DECIMALS)));
+
+    try {
+        document.getElementById("status").innerText = "Sending claim transaction...";
+        
+        await contract.methods.claim(amountWei.toString()).send({ from: accounts[0] });
+
+        document.getElementById("status").innerText = `Successfully claimed ${CLAIM_AMOUNT_PRIMA} PRIMA!`;
+    } catch (err) {
+        console.error(err);
+        document.getElementById("status").innerText = "Claim failed: " + (err.message || err);
+    }
+}
