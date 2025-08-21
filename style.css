@@ -26,7 +26,7 @@ button:disabled {
   min-height: 1.5em;
 }
 
-/* === Banner: identical behavior on desktop & mobile === */
+
 .brand-banner{
   display:block;
   height:auto;
@@ -79,4 +79,79 @@ button:disabled {
     border-radius:10px;
   }
   .site-disclaimer .disclaimer-text{ font-size:0.93rem; }
+}
+
+/* === Disclaimer v2: full-width bar style === */
+:root{
+  --disc-bg: #FFF3C4;     /* soft yellow */
+  --disc-border: #F0CE73; /* warm amber */
+  --disc-text: #3A2E00;   /* dark text */
+}
+
+.site-disclaimer.wide{
+  display:flex;
+  align-items:flex-start;
+  gap:0.75rem;
+  width:clamp(320px, 92vw, 1150px);
+  margin:24px auto 0;
+  padding:12px 16px;
+  background:var(--disc-bg);
+  color:var(--disc-text);
+  border:1px solid var(--disc-border);
+  border-radius:10px;
+  line-height:1.35;
+  box-shadow:0 1px 0 rgba(0,0,0,0.04);
+}
+
+.site-disclaimer.wide .disclaimer-icon{
+  flex:0 0 auto;
+  font-size:1.05rem;
+  line-height:1;
+  margin-top:2px;
+}
+
+.site-disclaimer.wide .disclaimer-text{
+  font-size:0.95rem;
+  text-align:left;
+}
+
+@media (max-width: 480px){
+  .site-disclaimer.wide{
+    margin:16px auto 0;
+    padding:10px 12px;
+    border-radius:8px;
+    width:clamp(300px, 92vw, 92vw);
+  }
+  .site-disclaimer.wide .disclaimer-text{ font-size:0.93rem; }
+}
+
+
+/* === Brand Banner v3: pixel-perfect parity with NOVA === */
+:root{
+  --logo-min: 300px;   /* small screens lower bound */
+  --logo-pref: 34vw;   /* preferred width on typical desktop */
+  --logo-max: 520px;   /* cap to avoid "ginormous" */
+}
+
+/* identical behavior for NOVA/PRIMA images */
+.brand-banner{
+  display:block;
+  height:auto;
+  margin:0 auto 20px;
+  width: clamp(var(--logo-min), var(--logo-pref), var(--logo-max));
+  max-width:none !important;  /* neutralize global image rules */
+}
+
+/* Tighter on wide desktops */
+@media (min-width: 1280px){
+  :root{ --logo-pref: 28vw; }
+}
+
+/* Keep healthy size on small phones */
+@media (max-width: 480px){
+  :root{
+    --logo-min: 240px;
+    --logo-pref: 62vw;
+    --logo-max: 420px;
+  }
 }
