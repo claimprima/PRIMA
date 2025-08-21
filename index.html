@@ -9,7 +9,7 @@
 <body>
 
   <!-- Banner Image -->
-  <img src="prima-banner.png" alt="PRIMA Banner" style="max-width:100%;height:auto;display:block;margin:0 auto 20px;">
+  <img src="prima-banner.png" alt="PRIMA Banner" class="brand-banner">
 
   <h2>Claim Your PRIMA Tokens</h2>
   <p>50 PRIMA per claim</p>
@@ -20,15 +20,12 @@
   <div id="status">Please connect your wallet.</div>
 
   <!-- ⚠️ Legal Disclaimer -->
-  <footer style="margin-top: 40px; font-size: 0.85rem; color: #666; max-width: 700px; margin-left: auto; margin-right: auto;">
-    <hr style="margin-bottom: 20px;">
-    <p style="line-height: 1.6;">
-      ⚠️ Disclaimer: NOVA ecosystem tokens (NOVA, PRIMA, LIRA, VOLT, and any future coins) are created solely for educational and experimental purposes.
-      They are not investments, securities, or financial products. No value is guaranteed, and they should not be purchased, traded, or held with any expectation of profit.
-      Use at your own risk. The creators assume no liability for losses or misuse.
-      NOVA tokens are not affiliated with any government, financial institution, or regulated entity.
-    </p>
-  </footer>
+  <div class="site-disclaimer" role="note" aria-live="polite">
+  <span class="disclaimer-icon">⚠️</span>
+  <div class="disclaimer-text">
+    <strong>Experimental</strong> — This project is educational only. No monetary value is implied. Use at your own risk.
+  </div>
+</div>
 
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <script src="script.js"></script>
